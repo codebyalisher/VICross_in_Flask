@@ -1,4 +1,5 @@
 import os
+import logging
 from .import database
 from instance.config import Config
 from AdminDashboard import database
@@ -8,6 +9,8 @@ from AdminDashboard.routes.utils import mail
 from AdminDashboard.routes.models import User
 from AdminDashboard.routes.auth_routes import bp
 from AdminDashboard.routes.user_routes import bp as user_bp
+from AdminDashboard.routes.trade_booths_routes import bp as tradebooth_bp
+
 
 def create_app(test_config=None):    
     app = Flask(__name__, instance_relative_config=True)
@@ -24,9 +27,10 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass    
-    
+    logging.basicConfig(filename='error.log', level=logging.INFO,format='%(asctime)s - %(levelname)s - %(message)s')
     app.register_blueprint(bp)    
     app.register_blueprint(user_bp)    
+    app.register_blueprint(tradebooth_bp)    
     mail.init_app(app)    
     database.init_app(app) #initialize the database at the app level
     login_manager = LoginManager(app)

@@ -110,6 +110,10 @@ def login():
     user_data.pop('updated_at', None)
     user_data.pop('image', None)
     user_data.pop('background_image', None)
+    user_data.pop('company', None)
+    user_data.pop('image_file_id', None)
+    user_data.pop('background_image_file_id', None)
+    user_data.pop('trade_booths', None)       
     
     if user.image: 
         file_id = user.image  
