@@ -1,4 +1,6 @@
+import base64
 import logging
+import requests
 import mimetypes
 from flask import current_app
 from imagekitio import ImageKit
@@ -26,6 +28,40 @@ def image_kit():
         return None
 
 def upload_image_to_imagekit(file):
+    """Uploads an image directly to ImageKit using a POST request."""
+    try:
+        api_key =current_app.config['IMAGE_KIT_PRIVATE_KEY']  
+        auth_string = api_key + ":"
+        auth_encoded = base64.b64encode(auth_string.encode()).decode()
+        headers = {
+            'Authorization': 'Basic ' + auth_encoded,
+        }
+        folder='/user-images/'
+        files = {
+            'file': (secure_filename(file.filename), file.stream, file.content_type),
+        }
+        data = {
+            'fileName': secure_filename(file.filename),
+            'folder': folder,
+            'useUniqueFileName': 'true',
+            'isPrivateFile': 'false',
+            'isPublished': 'true'
+        }
+        response = requests.post('https://upload.imagekit.io/api/v1/files/upload', headers=headers, files=files, data=data)
+        response.raise_for_status()  
+        result = response.json()
+        return result['url'], result['fileId']
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error uploading image to ImageKit: {e}")
+        return None, None
+    except KeyError as e:
+        logging.error(f"Error parsing ImageKit response: {e}, response text: {response.text}")
+        return None, None
+    except Exception as e:
+        logging.error(f"Error during image upload: {e}")
+        return None, None
+
+# def upload_image_to_imagekit(file):
     imagekit = image_kit()
     if imagekit is None:
         logging.error("ImageKit client initialization failed.")
