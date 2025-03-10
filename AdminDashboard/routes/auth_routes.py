@@ -26,20 +26,23 @@ def register():
     email = data.get('email')
     password = data.get('password')
     password_confirmation = data.get('password_confirmation')
+    trade_booths=data.get('trade_booths')
    
     if not name or not email or not password or not password_confirmation:
         return jsonify({"status":status.HTTP_400_BAD_REQUEST, "message": "All fields are required"}), status.HTTP_400_BAD_REQUEST
 
     if password != password_confirmation:
         return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "Passwords do not match"}),status.HTTP_400_BAD_REQUEST
-
+    
+    if trade_booths is None:        
+        trade_booths = []
     # Check if the email already exists
     existing_user = db.session.query(User).filter_by(email=email).first()
     if existing_user:
         return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "User with this email already exists"}),status.HTTP_400_BAD_REQUEST
 
     # Create a new user
-    user = User(name=name, email=email, password=password,role=role)
+    user = User(name=name, email=email, password=password,role=role,trade_booths=trade_booths)
     db.session.add(user)
     db.session.commit()
    

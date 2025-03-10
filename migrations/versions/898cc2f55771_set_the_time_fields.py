@@ -1,8 +1,8 @@
-"""new filed_id added
+"""set the time fields
 
-Revision ID: 8e26dd482b78
-Revises: 9cfb347a946e
-Create Date: 2025-03-07 10:00:13.075938
+Revision ID: 898cc2f55771
+Revises: c0090ed41db4
+Create Date: 2025-03-10 12:18:51.661739
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '8e26dd482b78'
-down_revision = '9cfb347a946e'
+revision = '898cc2f55771'
+down_revision = 'c0090ed41db4'
 branch_labels = None
 depends_on = None
 

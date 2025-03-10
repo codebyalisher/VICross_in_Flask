@@ -1,8 +1,8 @@
-"""TradeBooths model added
+"""set the time fields
 
-Revision ID: a5d53f17c76b
-Revises: 8e26dd482b78
-Create Date: 2025-03-07 14:30:21.250103
+Revision ID: 3b4b513527d9
+Revises: 0d74bc55feb5
+Create Date: 2025-03-10 10:44:26.462397
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'a5d53f17c76b'
-down_revision = '8e26dd482b78'
+revision = '3b4b513527d9'
+down_revision = '0d74bc55feb5'
 branch_labels = None
 depends_on = None
 
@@ -22,15 +22,16 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=255), nullable=False),
     sa.Column('date', sa.Date(), nullable=False),
-    sa.Column('time', sa.Time(), nullable=False),
+    sa.Column('start_time', sa.Time(), nullable=False),
+    sa.Column('end_time', sa.Time(), nullable=False),
     sa.Column('location', sa.String(length=255), nullable=False),
     sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('image_filename', sa.String(length=255), nullable=True),
     sa.Column('image_url', sa.String(length=255), nullable=True),
     sa.Column('image_file_id', sa.String(length=255), nullable=True),
-    sa.Column('document_filename', sa.String(length=255), nullable=True),
-    sa.Column('document_url', sa.String(length=255), nullable=True),
-    sa.Column('document_file_id', sa.String(length=255), nullable=True),
+    sa.Column('document_pdf_url', sa.String(length=255), nullable=True),
+    sa.Column('document_pdf_file_id', sa.String(length=255), nullable=True),
+    sa.Column('document_docx_url', sa.String(length=255), nullable=True),
+    sa.Column('document_docx_file_id', sa.String(length=255), nullable=True),
     sa.Column('creator_id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=True),
     sa.Column('updated_at', sa.DateTime(), nullable=True),

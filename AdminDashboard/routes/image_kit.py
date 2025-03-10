@@ -173,4 +173,43 @@ def upload_tradebooth_files_to_imagekit(file):
         logging.error(f"Error during file upload: {e}")
         return None, None
 
+def update_tradebooth_files_to_imagekit(file,existing_file_id=None):
+    """Uploads an image directly to ImageKit using a POST request."""
+    try:
+        api_key =current_app.config['IMAGE_KIT_PRIVATE_KEY']  
+        auth_string = api_key + ":"
+        auth_encoded = base64.b64encode(auth_string.encode()).decode()
+        headers = {
+            'Authorization': 'Basic ' + auth_encoded,
+        }
+        folder='/user-files/'
+        files = {
+            'file': (secure_filename(file.filename), file.stream, file.content_type),
+        }
+        data = {
+            'fileName': secure_filename(file.filename),
+            'folder': folder,
+            'useUniqueFileName': 'true',
+            'isPrivateFile': 'false',
+            'isPublished': 'true'
+        }
+        if existing_file_id:           
+            url = f'https://upload.imagekit.io/api/v1/files/{existing_file_id}/upload'
+            data['fileId'] = existing_file_id 
+        else:
+            # Upload a new file
+            url = 'https://upload.imagekit.io/api/v1/files/upload'
 
+        response = requests.post(url, headers=headers, files=files, data=data)
+        response.raise_for_status()
+        result = response.json()
+        return result['url'], result['fileId']
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error uploading file to ImageKit: {e}")
+        return None, None
+    except KeyError as e:
+        logging.error(f"Error parsing ImageKit response: {e}, response text: {response.text}")
+        return None, None
+    except Exception as e:
+        logging.error(f"Error during file upload: {e}")
+        return None, None
