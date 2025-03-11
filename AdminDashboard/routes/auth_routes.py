@@ -17,20 +17,16 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 @bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-
     if not data:
         return jsonify({"status":status.HTTP_400_BAD_REQUEST, "message": "No input data provided"}),status.HTTP_400_BAD_REQUEST
-
     name = data.get('name')
     role=data.get('role')
     email = data.get('email')
     password = data.get('password')
     password_confirmation = data.get('password_confirmation')
     trade_booths=data.get('trade_booths')
-   
     if not name or not email or not password or not password_confirmation:
         return jsonify({"status":status.HTTP_400_BAD_REQUEST, "message": "All fields are required"}), status.HTTP_400_BAD_REQUEST
-
     if password != password_confirmation:
         return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "Passwords do not match"}),status.HTTP_400_BAD_REQUEST
     
@@ -70,10 +66,9 @@ def verify_email(token):
 
     return jsonify({"status":status.HTTP_200_OK, "message": "Email verified successfully!"}),status.HTTP_200_OK
 
-@bp.route('/login', methods=['POST'])
+@bp.route('/login', methods=['GET','POST'])
 def login():
-    data = request.get_json()
-    
+    data = request.get_json()   
     if not data:
         return jsonify({
             "status": status.HTTP_400_BAD_REQUEST,
@@ -103,8 +98,7 @@ def login():
     refresh_token = generate_refresh_token(user)
     
     session.clear()
-    session['user_id'] = user.id
-    
+    session['user_id'] = user.id    
     login_user(user)
     
     user_data = user.to_dict()

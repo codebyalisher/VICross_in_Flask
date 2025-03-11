@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Rooms</title>
+</head>
+<body>
+    <h1>Chat Rooms</h1>
+    <form method="POST" action="{{ url_for('sockets.rooms') }}">
+        <label for="name">Room Name:</label>
+        <input type="text" name="name" id="name" required>
+        <button type="submit">Create Room</button>
+    </form>
+
+    <h2>Existing Rooms</h2>
+    <ul>
+        {% for room in rooms %}
+        <li>
+            {{ room.name }}
+            <a href="{{ url_for('sockets.join_room', room_id=room.id) }}">Join</a>
+        </li>
+        {% endfor %}
+    </ul>
+    <a href="{{ url_for('sockets.index') }}">Back to Chat</a>
+</body>
+</html>

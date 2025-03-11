@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from alembic import context
 from AdminDashboard import create_app
 from AdminDashboard.database import db
-from AdminDashboard.routes.models import User,OTP,TradeBooth  # Import the models here
+from AdminDashboard.routes.models import User,OTP,TradeBooth,Room,Message  # Import the models here
 
 config = context.config
 fileConfig(config.config_file_name)

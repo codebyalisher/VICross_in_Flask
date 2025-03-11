@@ -1,3 +1,4 @@
+from enum import Enum
 from flask_login import UserMixin 
 from AdminDashboard.database import db  
 from datetime import datetime, timedelta
@@ -97,6 +98,11 @@ class OTP(db.Model):
             'expired_at': self.expired_at,
             'is_used': self.is_used
         }
+ 
+class TradeBoothStatus(Enum):
+    PENDING = 'pending'
+    ACCEPTED = 'accepted'
+    REJECTED = 'rejected'
     
 class TradeBooth(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -105,8 +111,11 @@ class TradeBooth(db.Model):
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
     location = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text)       
+    description = db.Column(db.Text) 
+    company_id = db.Column(db.Integer, db.ForeignKey('company.id'))
+    company = db.relationship('Company', backref='trade_booths')      
     image_url = db.Column(db.String(255))
+    status = db.Column(db.Enum(TradeBoothStatus), default=TradeBoothStatus.PENDING)
     image_file_id = db.Column(db.String(255))      # Specific field for PDF    
     document_pdf_url = db.Column(db.String(255))
     document_pdf_file_id = db.Column(db.String(255))     # Specific field for DOCX    
@@ -116,7 +125,7 @@ class TradeBooth(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    def __init__(self, creator_id, title, date, start_time,end_time, location, description=None,image_url=None, image_file_id=None, document_pdf_url=None, document_pdf_file_id=None, document_docx_url=None, document_docx_file_id=None, created_at=None, updated_at=None):
+    def __init__(self, creator_id, title, date, start_time,end_time, location, description=None,image_url=None,status=None,company=None, image_file_id=None, document_pdf_url=None, document_pdf_file_id=None, document_docx_url=None, document_docx_file_id=None, created_at=None, updated_at=None):
         self.title = title
         self.date = date
         self.start_time=start_time
@@ -124,6 +133,7 @@ class TradeBooth(db.Model):
         self.location = location
         self.description = description       
         self.image_url = image_url
+        self.status = status
         self.image_file_id = image_file_id       
         self.document_pdf_url = document_pdf_url
         self.document_pdf_file_id = document_pdf_file_id               
@@ -131,15 +141,55 @@ class TradeBooth(db.Model):
         self.document_docx_file_id = document_docx_file_id
         self.created_at = created_at
         self.updated_at = updated_at
-        self.creator_id = creator_id
+        self.creator_id = creator_id        
+        self.company=company
 
+    def to_dict(self):
+        tradebooth_dict = {
+            'id': self.id,
+            'title': self.title,
+            'date': self.date.strftime('%d %b, %Y'),
+            'time': f"{self.start_time.strftime('%I.%M%p')} - {self.end_time.strftime('%I.%M%p')}",
+            'description': self.description,
+            'image_url': self.image_url,
+            'creator_id': self.creator_id,
+            'status': self.status.value,
+        }
+        if self.company:
+            tradebooth_dict['company'] = self.company.to_dict() 
+        return tradebooth_dict
+
+class Company(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    image_url = db.Column(db.String(255))
+    image_file_id = db.Column(db.String(255))
+    location = db.Column(db.String(100))
+    size = db.Column(db.String(50))    
+    def __init__(self, name, image_url=None, location=None, size=None, image_file_id=None):
+        self.name = name
+        self.image_url = image_url
+        self.location = location
+        self.size = size
+        self.image_file_id = image_file_id      
     def to_dict(self):
         return {
             'id': self.id,
-            'title': self.title,
-            'date': self.date.strftime('%d %b, %Y'),  # Format date
-            'time': f"{self.start_time.strftime('%I.%M%p')} - {self.end_time.strftime('%I.%M%p')}", # Format both times, # Format time
-            'description': self.description,            
-            'image_url': self.image_url,                      
-            'creator_id': self.creator_id
+            'name': self.name,
+            'image_url': self.image_url,
+            'location': self.location,
+            'size': self.size,
         }
+        
+class Message(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    room_id = db.Column(db.Integer, db.ForeignKey('room.id'))
+    user = db.relationship('User', backref='messages')
+    room = db.relationship('Room', backref='messages')
+
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)

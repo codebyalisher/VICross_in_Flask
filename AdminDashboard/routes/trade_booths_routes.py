@@ -3,8 +3,8 @@ from datetime import datetime
 from flask import current_app
 from AdminDashboard.database import db
 from flask import Blueprint, request, jsonify
-from AdminDashboard.routes.models import TradeBooth
 from AdminDashboard.routes.utils import token_required,allowed_file
+from AdminDashboard.routes.models import TradeBooth,TradeBoothStatus,Company
 from AdminDashboard.routes.image_kit import upload_tradebooth_files_to_imagekit,update_tradebooth_files_to_imagekit,upload_image_to_imagekit,delete_image_from_imagekit,update_image_to_imagekit,get_image_from_imagekit
 
 bp=Blueprint('trade_booths', __name__, url_prefix='/trade_booths')
@@ -90,7 +90,8 @@ def create_trade_booth():
         document_pdf_url=pdf_url,
         document_pdf_file_id=pdf_file_id,
         document_docx_url=docx_url,
-        document_docx_file_id=docx_file_id
+        document_docx_file_id=docx_file_id,
+        status=TradeBoothStatus.PENDING 
     )
     existing_trade_booth = db.session.query(TradeBooth).filter_by(title=title,start_time=start_time,end_time=end_time,date=date_obj,location=data.get('location')).first()
     if existing_trade_booth:
@@ -245,3 +246,31 @@ def delete_trade_booth(trade_booth_id):
         "status": status.HTTP_200_OK,
         "message": "Trade booth deleted successfully"
     }), status.HTTP_200_OK   
+   
+@bp.route('/<int:trade_booth_id>/status', methods=['PUT'])
+@token_required
+def status_trade_booth(trade_booth_id):
+    trade_booth = db.session.query(TradeBooth).get(trade_booth_id)
+    if not trade_booth:
+        return jsonify({
+            "status": status.HTTP_404_NOT_FOUND,
+            "message": "Trade booth not found"
+        }), status.HTTP_404_NOT_FOUND
+    data = request.get_json()  
+    status_str = data.get('status')
+    try:
+        status_enum = TradeBoothStatus(status_str)
+    except ValueError:
+        return jsonify({
+            "status": status.HTTP_400_BAD_REQUEST,
+            "message": "Invalid status"
+        }), status.HTTP_400_BAD_REQUEST
+    trade_booth.status = status_enum
+    db.session.commit()
+    return jsonify({
+        "status": status.HTTP_200_OK,
+        "message": f"Trade booth status updated to {status_str}"
+    }), status.HTTP_200_OK
+
+
+
