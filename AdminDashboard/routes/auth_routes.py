@@ -1,15 +1,16 @@
 import base64
+import requests
 from flask_api import status
 from flask import render_template
 from AdminDashboard.database import db
 from datetime import datetime, timedelta
 from flask_login import login_user,current_user
 from AdminDashboard.routes.models import User,OTP
-from flask import Blueprint, request, jsonify, session
 from AdminDashboard.routes.image_kit import get_image_from_imagekit
 from werkzeug.security import check_password_hash, generate_password_hash
+from flask import Blueprint, request, jsonify, session,redirect,current_app
 from AdminDashboard.routes.utils import verify_token,send_registration_email,generate_verification_token,token_required
-from AdminDashboard.routes.utils import generate_jwt, generate_refresh_token,send_otp_email,validate_password,store_otp,generate_otp,role_required
+from AdminDashboard.routes.utils import generate_jwt_token, generate_refresh_token,send_otp_email,validate_password,store_otp,generate_otp,role_required
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -94,7 +95,7 @@ def login():
     if not user.verified:
         return jsonify({"status": status.HTTP_403_FORBIDDEN,"message": "Account is not verified. Please check your email for the verification link."}), status.HTTP_403_FORBIDDEN
     
-    access_token = generate_jwt(user)
+    access_token = generate_jwt_token(user)
     refresh_token = generate_refresh_token(user)
     
     session.clear()
@@ -125,6 +126,70 @@ def login():
             user_data['background_image'] = background_imagekit_result['url']
 
     return jsonify({"status":status.HTTP_200_OK,"message": "Login successful", "data": user_data,"access_token": access_token,"refresh_token": refresh_token}),status.HTTP_200_OK
+
+@bp.route('/google_login_page_redirect',methods=['GET'])
+def google_login():
+    CLIENT_ID = current_app.config['CLIENT_ID']    
+    REDIRECT_URI = current_app.config['REDIRECT_URI']    
+    authorization_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={CLIENT_ID}&"
+        f"redirect_uri={REDIRECT_URI}&"
+        "response_type=code&"
+        "scope=openid%20email%20profile&"
+        "access_type=offline&" 
+        "prompt=consent" 
+    )
+    return jsonify({"status":status.HTTP_200_OK,"authorization_url": authorization_url}),status.HTTP_200_OK
+
+@bp.route('/google-oauth', methods=['GET'])
+def google_oauth():
+    """Authenticate the user using Google OAuth2.
+    Call the /google-login above endpoint to get the authorization URL.
+    Open the URL in your browser and log in with Google.
+    After authentication, Google will redirect to your redirect_uri with the authorization code.
+    Your backend will handle the redirect, exchange the code for an access token, and return the user info and JWT token.        
+    """
+    # Google OAuth2 Configuration (replace with your details)
+    CLIENT_ID = current_app.config['CLIENT_ID']
+    CLIENT_SECRET = current_app.config['CLIENT_SECRET']
+    REDIRECT_URI = current_app.config['REDIRECT_URI']
+    # Step 1: Get the authorization code from the client
+    auth_code = request.args.get('code')
+    if not auth_code:
+        return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "No authorization code found"}),status.HTTP_400_BAD_REQUEST
+    # Step 2: Exchange the authorization code for an access token
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
+        "code": auth_code,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
+        "redirect_uri": REDIRECT_URI,
+        "grant_type": "authorization_code"
+    }
+    # Step 3: Make the request to Google to exchange code for token
+    token_response = requests.post(token_url, data=token_data)
+    if token_response.status_code != 200:
+        return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "Failed to get token from Google"}),status.HTTP_400_BAD_REQUEST    
+    token_info = token_response.json()
+    access_token = token_info.get('access_token')
+    if not access_token:
+        return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "No access token received"}),status.HTTP_400_BAD_REQUEST
+    # Step 4: Use the access token to get user information
+    user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    user_info_response = requests.get(user_info_url, headers=headers)
+    if user_info_response.status_code != 200:
+        return jsonify({"status":status.HTTP_400_BAD_REQUEST,"message": "Failed to get user info from Google"}),status.HTTP_400_BAD_REQUEST
+    user_info = user_info_response.json()
+    jwt_token=generate_jwt_token(user_info)   #This token can then be used in subsequent API calls to authenticate the user, so you don't have to send the access token from Google every time 
+    # Step 5: Return JWT token in the response
+    return jsonify({
+        "status": status.HTTP_200_OK,
+        "message": "User authenticated successfully",
+        "data": user_info,
+        "access_token": jwt_token
+    }), status.HTTP_200_OK
 
 @bp.route('/send_otp', methods=['POST'])
 def send_otp():
