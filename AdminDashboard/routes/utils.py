@@ -77,23 +77,26 @@ def generate_jwt_token(user_info, expiration=None):
         expiration = int(expiration)
     except ValueError:
         expiration = 1      
-    expiration_time = datetime.utcnow() + timedelta(hours=expiration)    
-    if 'sub' in user_info:         
+    expiration_time = datetime.utcnow() + timedelta(hours=expiration)  
+    if isinstance(user_info, dict):  
+        if 'sub' not in user_info:
+            raise ValueError("OAuth user info missing required field: 'sub'")
         payload = {
             'sub': user_info.get('sub'),  
             'name': user_info.get('name', 'Unknown'),  
             'email': user_info.get('email'),
             'iat': datetime.utcnow(),
             'exp': expiration_time
-        }
-    else: 
+        }  
+    else:
         if not hasattr(user_info, 'id') or not hasattr(user_info, 'email'):
             raise ValueError("User info missing required fields (id or email) for regular login.")
         payload = {
             'user_id': user_info.id, 
             'email': user_info.email,
+            'iat': datetime.utcnow(),
             'exp': expiration_time
-        }
+            }
     secret_key = current_app.config['ACCESS_TOKEN_SECRET_KEY']  
     token = jwt.encode(payload, secret_key, algorithm='HS256')
     return token

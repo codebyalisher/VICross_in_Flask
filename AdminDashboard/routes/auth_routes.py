@@ -417,7 +417,6 @@ def all_users():
         user_dict.pop('company', None)
         user_dict['id'] = user.id
         users_data.append(user_dict)
-
     return jsonify({
         "status": status.HTTP_200_OK,
         "message": "Profile shown up successfully",

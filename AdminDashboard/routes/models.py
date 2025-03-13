@@ -54,7 +54,7 @@ class User(db.Model,UserMixin):
     
     def to_dict(self):
         """Convert the User object to a dictionary"""
-        return {            
+        user_dict= {            
             'name': self.name,
             'email': self.email,
             'verified': self.verified,
@@ -67,9 +67,13 @@ class User(db.Model,UserMixin):
             'company': self.company,
             'background_image': self.background_image  ,
             'image_file_id': self.image_file_id,
-            'background_image_file_id': self.background_image    ,
-            'trade_booths':self.trade_booths      
+            'background_image_file_id': self.background_image    ,                
         }
+        if self.trade_booths:
+            user_dict['trade_booths'] = [booth.to_dict() for booth in self.trade_booths] #added this line
+        else:
+            user_dict['trade_booths'] = []
+        return user_dict
 
 class OTP(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -156,7 +160,7 @@ class TradeBooth(db.Model):
             'status': self.status.value,
         }
         if self.company:
-            tradebooth_dict['company'] = self.company.to_dict() 
+            tradebooth_dict['company'] = self.company.to_dict() if self.company else None
         return tradebooth_dict
 
 class Company(db.Model):
