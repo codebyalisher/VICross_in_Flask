@@ -14,9 +14,51 @@ With the access_token, you fetch the user's information (e.g., email, profile) f
 ### step 5:Return User Information: 
 Finally, you return the user info in the response.
 
-## Three methods and the flow for each of them:
+## There are folowing methods for OAUTH2.0 and the flow for each of them:
+- **Web Application Flow:** Use this if you have a backend server.This is the most common flow for web applications where the backend server handles the OAuth process.
 
-### 1. OAuth 2.0 Flow (Manual Code Exchange)
+    **Use Case:**  
+        Traditional web applications with a backend server.
+        Requires server-side handling of the authorization code and tokens.
+- **Client-Side Flow:** Use this for SPAs or mobile apps.This flow is used for single-page applications (SPAs) or mobile apps where the OAuth process happens on the client side.
+  
+  **Use Case:**  
+        Single-page applications (SPAs) or mobile apps.
+        No backend server is required to handle the OAuth process.
+
+- **Server-to-Server Flow:** Use this for backend services accessing Google APIs.This flow is used for server-to-server communication where no user interaction is required.
+
+    ***Steps:***
+      
+    ***Create a Service Account:*** Create a service account in the Google Cloud Console and download the JSON key file.
+    ***Generate a JWT:*** Use the service account credentials to generate a JWT (JSON Web Token) with the required scopes and expiration time.
+    ***Exchange JWT for Access Token:*** Send the JWT to Google's token endpoint to get an access token:
+    ```example
+    POST https://oauth2.googleapis.com/token
+    Parameters:
+    json
+    {
+      "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
+      "assertion": "YOUR_JWT"
+    }
+    ```
+    ***Use the Access Token:*** Use the access token to make API requests to Google.
+    
+     **Use Case:** Server-to-server communication (e.g., backend services accessing Google APIs).No user interaction is required.
+
+- **Device Flow:** Use this for devices with limited input capabilities.This flow is used for devices that lack a browser or have limited input capabilities (e.g., smart TVs, printers).
+  
+    **Use Case:** Devices with limited input capabilities (e.g., smart TVs, printers).
+
+- **Hybrid Flow:** Use this if you need both immediate and long-lived access.This flow combines the authorization code flow and implicit flow to provide both an access token and an authorization code.
+  
+  **Use Case:** Applications that need both immediate access (via the access token) and long-lived access (via the refresh token).
+
+- **Incremental Authorization:** Use this to request additional permissions dynamically.This is not a separate flow but a feature that allows you to request additional scopes as needed.
+  
+   **Use Case:** Applications that need to request additional permissions dynamically.
+
+### 1. Web Application Flow/OAuth 2.0 Flow (Manual Code Exchange)
 **Overview:**
 This method involves handling the entire OAuth 2.0 authorization process manually. You request the authorization code from Google, exchange it for an access token, and then use that token to retrieve user information.
 
@@ -116,7 +158,6 @@ This method involves using Google’s official libraries (google-auth-oauthlib, 
 ## 3. Google Sign-In (Google Login API)
 **Overview:**
 Google Sign-In (or Google Login API) is a JavaScript-based solution for handling authentication on the client-side. This method is typically used for client-side web applications but can also be used with backend systems. It allows the user to log in with their Google account and fetch an ID token or access token directly from the client, which is then sent to your backend server to authenticate or authorize the user.
-
 This method focuses more on client-side authentication, where Google takes care of the UI for login, and you only need to verify the token on your backend.
 
 **Flow:**
