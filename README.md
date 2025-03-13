@@ -1,3 +1,86 @@
+# AdminDashboard in Flask
+
+## Overview
+This project is a Flask-based Admin Dashboard that supports authentication, user management, company management, trade booths, and WebSocket communication. It utilizes SQLAlchemy for ORM, Flask-Migrate for migrations, and ImageKit for media storage. The backend is designed to work with a PostgreSQL database.
+
+## Project Structure
+```AdminDashboard_in_Flask/
+├── AdminDashboard/
+│   ├── routes/
+│   │   ├── auth_routes.py
+│   │   ├── company_routes.py
+│   │   ├── trade_booths_routes.py
+│   │   ├── user_routes.py
+│   │   ├── websockets_routes.py
+│   │   ├── utils.py
+│   │   └── image_kit.py
+│   ├── models.py
+│   └── __init__.py
+├── migrations/
+│   ├── versions/
+│   ├── env.py
+│   ├── alembic.ini
+│   ├── README
+│   └── script.py.mako
+├── instance/
+│   └── config.py
+├── requirements.txt
+└── README.md
+```
+
+## Authentication Routes
+- `GET /auth/google_login_page_redirect`
+- `GET /auth/google-oauth`
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/send-otp`
+- `POST /auth/resend-otp`
+- `POST /auth/verify-otp`
+- `POST /auth/reset-password`
+- `GET /auth/all-users-data`
+- `PATCH /auth/assign-role`
+- `GET /auth/google-oauth-login-authenticate`
+
+## User Routes
+- `PATCH /user/edit-user`
+- `DELETE /user/delete-user`
+- `GET /user/profile`
+
+## Company Routes
+- `POST /company/create-company`
+- `PUT /company/update-company`
+- `GET /company/get-details-companies`
+- `GET /company/get-single-details-company`
+
+## Trade Booth Routes
+- `POST /tradebooth/create-tradebooth`
+- `PUT /tradebooth/update-tradebooth`
+- `GET /tradebooth/get-details-tradebooths`
+- `GET /tradebooth/get-single-details-tradebooth`
+- `GET /tradebooth/status`
+
+## WebSocket Routes
+- `GET /rooms`
+- `POST /join-rooms`
+- `GET /leave-room`
+
+## Configuration
+The configuration settings are located in the `instance/config.py` file.
+
+## Database Models and Migrations
+The project uses SQLAlchemy for defining models and Flask-Migrate for handling database migrations. The models are defined in the `AdminDashboard/routes/models.py` file.
+
+## DB Setup
+The project uses PostgreSQL as the database management system. Ensure you have PostgreSQL installed and configured properly.
+
+## ImageKit for Media Storing
+The project uses ImageKit for storing and managing media files. The `AdminDashboard/routes/image_kit.py` file contains the necessary configurations and functions for interacting with ImageKit.
+
+## Dependencies
+The dependencies for this project are listed in the `requirements.txt` file.
+
+For more details, you can refer to the [project repository](https://github.com/codebyalisher/AdminDashboard_in_Flask).
+
 ## GOOGLE OAUTH2 AUTHENTICATION Flow
 ### step1:Google OAuth2 Configuration:
 You're fetching the CLIENT_ID, CLIENT_SECRET, and REDIRECT_URI from the Flask app’s config. You should make sure that these configurations are set in your config.py or another secure location.
