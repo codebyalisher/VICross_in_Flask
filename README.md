@@ -1,7 +1,7 @@
-# AdminDashboard in Flask
+# VI Cross in Flask
 
 ## Overview
-This project is a Flask-based Admin Dashboard that supports authentication, user management, company management, trade booths, and WebSocket communication. It utilizes SQLAlchemy for ORM, Flask-Migrate for migrations, and ImageKit for media storage. The backend is designed to work with a PostgreSQL database.
+This project is a Flask-based that supports Admin Dashboard , authentication, user management, company management, trade booths, and WebSocket communication. It utilizes SQLAlchemy for ORM, Flask-Migrate for migrations, and ImageKit for media storage. The backend is designed to work with a PostgreSQL database.
 
 ## Project Structure
 ```AdminDashboard_in_Flask/
